@@ -3,231 +3,539 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do List</title>
+  <title>Tasks</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #222;
+      --border: #2e2e2e;
+      --text: #e8e4dc;
+      --muted: #666;
+      --accent: #c8f04a;
+      --accent-dim: rgba(200,240,74,0.12);
+      --danger: #ff5f57;
+      --warn: #ffbd2e;
+      --info: #5ac8fa;
+      --radius: 8px;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Georgia', serif;
-      background: #f5f2ed;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
       min-height: 100vh;
+      padding: 3rem 1rem 6rem;
       display: flex;
-      align-items: flex-start;
       justify-content: center;
-      padding: 3rem 1rem;
-      color: #1a1a1a;
     }
 
-    .container {
-      width: 100%;
-      max-width: 500px;
-    }
+    .container { width: 100%; max-width: 560px; }
+
+    header { margin-bottom: 2.5rem; }
 
     h1 {
-      font-size: 2rem;
+      font-family: 'DM Serif Display', serif;
+      font-size: 3rem;
       font-weight: normal;
+      line-height: 1;
+      color: var(--text);
       letter-spacing: -0.02em;
-      margin-bottom: 0.25rem;
-      color: #1a1a1a;
     }
 
-    .subtitle {
-      font-size: 0.85rem;
-      color: #888;
-      margin-bottom: 2rem;
-      font-family: 'Courier New', monospace;
+    h1 span { color: var(--accent); font-style: italic; }
+
+    .header-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .input-row {
-      display: flex;
-      gap: 8px;
+    /* Add form */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
       margin-bottom: 1.5rem;
     }
 
-    input[type="text"] {
-      flex: 1;
-      padding: 10px 14px;
-      font-size: 15px;
-      font-family: inherit;
-      border: 1.5px solid #ccc;
-      border-radius: 6px;
-      background: #fff;
+    .form-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .form-row:last-child { margin-bottom: 0; }
+
+    input[type="text"], input[type="datetime-local"], select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      padding: 9px 12px;
       outline: none;
       transition: border-color 0.15s;
+      width: 100%;
     }
 
-    input[type="text"]:focus {
-      border-color: #1a1a1a;
-    }
+    input[type="text"]:focus,
+    input[type="datetime-local"]:focus,
+    select:focus { border-color: var(--accent); }
 
-    button.add-btn {
-      padding: 10px 18px;
-      font-size: 14px;
-      font-family: 'Courier New', monospace;
-      background: #1a1a1a;
-      color: #f5f2ed;
+    input[type="datetime-local"] { color-scheme: dark; }
+
+    select option { background: #1a1a1a; }
+
+    .priority-select { flex: 0 0 130px; }
+
+    .btn-add {
+      background: var(--accent);
+      color: #0f0f0f;
       border: none;
-      border-radius: 6px;
+      border-radius: var(--radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 20px;
       cursor: pointer;
-      transition: opacity 0.15s;
       white-space: nowrap;
+      transition: opacity 0.15s, transform 0.1s;
+      flex-shrink: 0;
     }
 
-    button.add-btn:hover { opacity: 0.8; }
-    button.add-btn:active { opacity: 0.6; }
+    .btn-add:hover { opacity: 0.85; }
+    .btn-add:active { transform: scale(0.97); }
 
-    ul {
-      list-style: none;
+    /* Filter bar */
+    .filter-bar {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      gap: 6px;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
     }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+    }
+
+    .filter-btn:hover { border-color: var(--text); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #0f0f0f; }
+
+    /* Tasks */
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 1.5rem 0 0.6rem;
+    }
+
+    ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 
     li {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #fff;
-      border: 1px solid #e0dbd3;
-      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
       padding: 12px 14px;
-      transition: opacity 0.2s;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.15s, opacity 0.2s;
+      position: relative;
+      overflow: hidden;
     }
 
-    li.done { opacity: 0.5; }
+    li::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 10px 0 0 10px;
+    }
 
-    li input[type="checkbox"] {
-      width: 17px;
-      height: 17px;
-      accent-color: #1a1a1a;
+    li.p-high::before { background: var(--danger); }
+    li.p-medium::before { background: var(--warn); }
+    li.p-low::before { background: var(--info); }
+    li.done { opacity: 0.45; }
+
+    li:hover { border-color: #3e3e3e; }
+
+    .cb-wrap {
+      padding-top: 2px;
       flex-shrink: 0;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
       cursor: pointer;
     }
 
+    .task-body { flex: 1; min-width: 0; }
+
     .task-text {
-      flex: 1;
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.4;
-      transition: text-decoration 0.1s;
+      word-break: break-word;
     }
 
     li.done .task-text {
       text-decoration: line-through;
-      color: #888;
+      color: var(--muted);
     }
 
-    button.del-btn {
-      font-size: 12px;
-      font-family: 'Courier New', monospace;
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 5px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .badge-high { background: rgba(255,95,87,0.15); color: var(--danger); }
+    .badge-medium { background: rgba(255,189,46,0.15); color: var(--warn); }
+    .badge-low { background: rgba(90,200,250,0.15); color: var(--info); }
+
+    .due-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .due-label.overdue { color: var(--danger); }
+    .due-label.soon { color: var(--warn); }
+    .due-label.ok { color: var(--accent); }
+
+    .notif-toggle {
       background: none;
-      border: 1px solid #e0dbd3;
-      color: #b05050;
-      border-radius: 5px;
-      padding: 3px 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 2px 7px;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
+      transition: all 0.15s;
+    }
+
+    .notif-toggle.on { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .notif-toggle:hover { border-color: var(--text); color: var(--text); }
+
+    .btn-del {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 2px;
       flex-shrink: 0;
+      transition: color 0.15s;
     }
 
-    button.del-btn:hover {
-      background: #fdf0f0;
-      border-color: #b05050;
-    }
+    .btn-del:hover { color: var(--danger); }
 
+    /* Empty */
     .empty {
       text-align: center;
-      color: #aaa;
-      font-size: 14px;
-      font-family: 'Courier New', monospace;
-      margin-top: 2rem;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 3rem 0;
     }
 
-    .stats {
-      font-size: 12px;
-      font-family: 'Courier New', monospace;
-      color: #aaa;
-      margin-top: 1.25rem;
-      text-align: right;
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 100;
     }
+
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Stats bar */
+    .stats {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .stats span { color: var(--text); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>To-Do</h1>
-    <p class="subtitle">keep it simple.</p>
+<div class="container">
+  <header>
+    <h1>Task<span>list.</span></h1>
+    <p class="header-meta" id="date-line"></p>
+  </header>
 
-    <div class="input-row">
+  <div class="form-card">
+    <div class="form-row">
       <input type="text" id="task-input" placeholder="What needs doing?" />
-      <button class="add-btn" onclick="addTask()">Add</button>
+      <button class="btn-add" onclick="addTask()">+ Add</button>
     </div>
-
-    <ul id="task-list"></ul>
-    <p class="empty" id="empty-msg">No tasks yet. Add one above!</p>
-    <p class="stats" id="stats" style="display:none;"></p>
+    <div class="form-row">
+      <input type="datetime-local" id="due-input" style="flex:1;" />
+      <select class="priority-select" id="priority-input">
+        <option value="medium">— Priority —</option>
+        <option value="high">🔴 High</option>
+        <option value="medium">🟡 Medium</option>
+        <option value="low">🔵 Low</option>
+      </select>
+    </div>
   </div>
 
-  <script>
-    const tasks = [];
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" onclick="setFilter('active', this)">Active</button>
+    <button class="filter-btn" onclick="setFilter('done', this)">Done</button>
+    <button class="filter-btn" onclick="setFilter('overdue', this)">Overdue</button>
+    <button class="filter-btn" onclick="setFilter('today', this)">Today</button>
+  </div>
 
-    const input = document.getElementById('task-input');
-    const list  = document.getElementById('task-list');
-    const empty = document.getElementById('empty-msg');
-    const stats = document.getElementById('stats');
+  <div class="stats" id="stats"></div>
 
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+  <ul id="task-list"></ul>
+  <p class="empty" id="empty-msg" style="display:none;">Nothing here. Add a task above.</p>
+</div>
 
-    function addTask() {
-      const text = input.value.trim();
-      if (!text) return;
-      tasks.push({ text, done: false });
-      input.value = '';
-      render();
-    }
+<div id="toast"></div>
 
-    function toggleTask(i) {
-      tasks[i].done = !tasks[i].done;
-      render();
-    }
+<script>
+  let tasks = JSON.parse(localStorage.getItem('tasks-v2') || '[]');
+  let currentFilter = 'all';
+  let notifPermission = false;
 
-    function deleteTask(i) {
-      tasks.splice(i, 1);
-      render();
-    }
+  // Ask for notification permission on load
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().then(p => { notifPermission = p === 'granted'; });
+  } else if (Notification.permission === 'granted') {
+    notifPermission = true;
+  }
 
-    function render() {
-      list.innerHTML = '';
-      empty.style.display = tasks.length === 0 ? 'block' : 'none';
-      stats.style.display = tasks.length === 0 ? 'none' : 'block';
+  document.getElementById('date-line').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
 
-      const done = tasks.filter(t => t.done).length;
-      stats.textContent = `${done} of ${tasks.length} done`;
+  document.getElementById('task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
 
-      tasks.forEach((task, i) => {
-        const li = document.createElement('li');
-        if (task.done) li.classList.add('done');
+  function save() {
+    localStorage.setItem('tasks-v2', JSON.stringify(tasks));
+  }
 
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = task.done;
-        cb.onchange = () => toggleTask(i);
+  function addTask() {
+    const text = document.getElementById('task-input').value.trim();
+    if (!text) return;
+    const due = document.getElementById('due-input').value;
+    const priority = document.getElementById('priority-input').value;
 
-        const span = document.createElement('span');
-        span.className = 'task-text';
-        span.textContent = task.text;
+    const task = {
+      id: Date.now(),
+      text,
+      done: false,
+      due: due || null,
+      priority: priority || 'medium',
+      notify: false,
+      notifId: null,
+      created: Date.now()
+    };
 
-        const del = document.createElement('button');
-        del.className = 'del-btn';
-        del.textContent = 'delete';
-        del.onclick = () => deleteTask(i);
+    tasks.unshift(task);
+    save();
 
-        li.appendChild(cb);
-        li.appendChild(span);
-        li.appendChild(del);
-        list.appendChild(li);
-      });
-    }
+    document.getElementById('task-input').value = '';
+    document.getElementById('due-input').value = '';
+    document.getElementById('priority-input').value = 'medium';
 
     render();
-  </script>
+    showToast('Task added');
+  }
+
+  function toggleDone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (t) { t.done = !t.done; save(); render(); }
+  }
+
+  function deleteTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    save(); render();
+    showToast('Task deleted');
+  }
+
+  function toggleNotify(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t || !t.due) return;
+
+    if (!notifPermission) {
+      Notification.requestPermission().then(p => {
+        notifPermission = p === 'granted';
+        if (notifPermission) toggleNotify(id);
+        else showToast('Notifications blocked');
+      });
+      return;
+    }
+
+    t.notify = !t.notify;
+
+    if (t.notify) {
+      const ms = new Date(t.due).getTime() - Date.now() - 15 * 60 * 1000;
+      if (ms > 0) {
+        t.notifId = setTimeout(() => {
+          new Notification('Task reminder', { body: t.text, icon: '' });
+        }, ms);
+        showToast('Reminder set (15 min before)');
+      } else {
+        showToast('Due time is too soon for a reminder');
+        t.notify = false;
+      }
+    } else {
+      if (t.notifId) clearTimeout(t.notifId);
+      t.notifId = null;
+      showToast('Reminder removed');
+    }
+
+    save(); render();
+  }
+
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function dueStatus(due) {
+    if (!due) return null;
+    const now = Date.now();
+    const d = new Date(due).getTime();
+    const diff = d - now;
+    if (diff < 0) return 'overdue';
+    if (diff < 24 * 60 * 60 * 1000) return 'soon';
+    return 'ok';
+  }
+
+  function formatDue(due) {
+    if (!due) return '';
+    const d = new Date(due);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    const isTomorrow = d.toDateString() === new Date(now.getTime() + 86400000).toDateString();
+    const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    if (isToday) return `today ${timeStr}`;
+    if (isTomorrow) return `tomorrow ${timeStr}`;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + timeStr;
+  }
+
+  function getFilteredTasks() {
+    const now = Date.now();
+    const todayEnd = new Date(); todayEnd.setHours(23,59,59,999);
+    return tasks.filter(t => {
+      if (currentFilter === 'active') return !t.done;
+      if (currentFilter === 'done') return t.done;
+      if (currentFilter === 'overdue') return !t.done && t.due && new Date(t.due).getTime() < now;
+      if (currentFilter === 'today') return t.due && new Date(t.due) <= todayEnd && new Date(t.due) >= new Date().setHours(0,0,0,0);
+      return true;
+    });
+  }
+
+  function render() {
+    const list = document.getElementById('task-list');
+    const empty = document.getElementById('empty-msg');
+    const statsEl = document.getElementById('stats');
+    list.innerHTML = '';
+
+    const filtered = getFilteredTasks();
+    empty.style.display = filtered.length === 0 ? 'block' : 'none';
+
+    const total = tasks.length;
+    const done = tasks.filter(t => t.done).length;
+    const overdue = tasks.filter(t => !t.done && t.due && new Date(t.due).getTime() < Date.now()).length;
+    statsEl.innerHTML = `<span>${done}</span>/${total} done &nbsp;·&nbsp; <span style="color:${overdue>0?'var(--danger)':'var(--muted)'}">${overdue}</span> overdue`;
+
+    filtered.forEach(task => {
+      const li = document.createElement('li');
+      li.classList.add(`p-${task.priority}`);
+      if (task.done) li.classList.add('done');
+
+      const status = dueStatus(task.due);
+
+      li.innerHTML = `
+        <div class="cb-wrap">
+          <input type="checkbox" ${task.done ? 'checked' : ''} onchange="toggleDone(${task.id})" />
+        </div>
+        <div class="task-body">
+          <div class="task-text">${escHtml(task.text)}</div>
+          <div class="task-meta">
+            <span class="badge badge-${task.priority}">${task.priority}</span>
+            ${task.due ? `<span class="due-label ${status || ''}">${status === 'overdue' ? '⚠ overdue · ' : status === 'soon' ? '⏰ ' : ''}${formatDue(task.due)}</span>` : ''}
+            ${task.due ? `<button class="notif-toggle ${task.notify ? 'on' : ''}" onclick="toggleNotify(${task.id})">${task.notify ? '🔔 on' : '🔕 remind'}</button>` : ''}
+          </div>
+        </div>
+        <button class="btn-del" onclick="deleteTask(${task.id})" title="Delete">×</button>
+      `;
+
+      list.appendChild(li);
+    });
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Re-render every minute to update overdue status
+  setInterval(render, 60000);
+
+  render();
+</script>
 </body>
 </html>
