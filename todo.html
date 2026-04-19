@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: #f5f2ed;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 3rem 1rem;
+      color: #1a1a1a;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: normal;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 2rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 1.5px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #1a1a1a;
+    }
+
+    button.add-btn {
+      padding: 10px 18px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #f5f2ed;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    button.add-btn:hover { opacity: 0.8; }
+    button.add-btn:active { opacity: 0.6; }
+
+    ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid #e0dbd3;
+      border-radius: 8px;
+      padding: 12px 14px;
+      transition: opacity 0.2s;
+    }
+
+    li.done { opacity: 0.5; }
+
+    li input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: #1a1a1a;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .task-text {
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.4;
+      transition: text-decoration 0.1s;
+    }
+
+    li.done .task-text {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    button.del-btn {
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      background: none;
+      border: 1px solid #e0dbd3;
+      color: #b05050;
+      border-radius: 5px;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+
+    button.del-btn:hover {
+      background: #fdf0f0;
+      border-color: #b05050;
+    }
+
+    .empty {
+      text-align: center;
+      color: #aaa;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      margin-top: 2rem;
+    }
+
+    .stats {
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      color: #aaa;
+      margin-top: 1.25rem;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>To-Do</h1>
+    <p class="subtitle">keep it simple.</p>
+
+    <div class="input-row">
+      <input type="text" id="task-input" placeholder="What needs doing?" />
+      <button class="add-btn" onclick="addTask()">Add</button>
+    </div>
+
+    <ul id="task-list"></ul>
+    <p class="empty" id="empty-msg">No tasks yet. Add one above!</p>
+    <p class="stats" id="stats" style="display:none;"></p>
+  </div>
+
+  <script>
+    const tasks = [];
+
+    const input = document.getElementById('task-input');
+    const list  = document.getElementById('task-list');
+    const empty = document.getElementById('empty-msg');
+    const stats = document.getElementById('stats');
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+
+    function addTask() {
+      const text = input.value.trim();
+      if (!text) return;
+      tasks.push({ text, done: false });
+      input.value = '';
+      render();
+    }
+
+    function toggleTask(i) {
+      tasks[i].done = !tasks[i].done;
+      render();
+    }
+
+    function deleteTask(i) {
+      tasks.splice(i, 1);
+      render();
+    }
+
+    function render() {
+      list.innerHTML = '';
+      empty.style.display = tasks.length === 0 ? 'block' : 'none';
+      stats.style.display = tasks.length === 0 ? 'none' : 'block';
+
+      const done = tasks.filter(t => t.done).length;
+      stats.textContent = `${done} of ${tasks.length} done`;
+
+      tasks.forEach((task, i) => {
+        const li = document.createElement('li');
+        if (task.done) li.classList.add('done');
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = task.done;
+        cb.onchange = () => toggleTask(i);
+
+        const span = document.createElement('span');
+        span.className = 'task-text';
+        span.textContent = task.text;
+
+        const del = document.createElement('button');
+        del.className = 'del-btn';
+        del.textContent = 'delete';
+        del.onclick = () => deleteTask(i);
+
+        li.appendChild(cb);
+        li.appendChild(span);
+        li.appendChild(del);
+        list.appendChild(li);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
